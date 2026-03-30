@@ -88,15 +88,25 @@ git checkout -b feature/your-feature-name
 Ctrl+Shift+P → Tasks: Run Task → Initialize Copilot Workspace
 ```
 
-VS Code will present four sequential input prompts:
+The terminal panel opens and the script prompts for each value interactively:
 
-| Prompt | Example |
-|--------|---------|
-| Project name | `Acme Corp - API Refactor Phase 2` |
-| One-sentence description | `Migrate legacy REST endpoints to GraphQL` |
-| Problem statement | `Existing REST API has no versioning and causes breaking changes on every release` |
-| IR/security engagement? | `yes` or `no` |
-| Scripting language(s)? | `python`, `powershell`, or `both` |
+```
+  Copilot Workspace Initialization
+  ──────────────────────────────────
+
+  Project name: Acme Corp - API Refactor Phase 2
+  Description (one sentence): Migrate legacy REST endpoints to GraphQL
+  Problem statement: No versioning exists, breaking changes on every release
+  IR/security engagement? (yes/no): no
+  Scripting language? (python/powershell/both): python
+```
+
+All fields are required — the script will re-prompt if a field is left empty or an invalid option is entered for the `yes/no` and language fields.
+
+> **CLI / non-interactive use:** The script accepts all five values as named parameters, allowing it to be called from a pipeline or automation script without prompts:
+> ```powershell
+> powershell.exe -File .vscode/init-copilot.ps1 -ProjectName "Acme Corp" -Description "..." -ProblemStatement "..." -IsIR no -Language python
+> ```
 
 ### 4. Begin work
 
