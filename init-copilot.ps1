@@ -22,9 +22,9 @@
     'yes' to retain the IR/security section. 'no' to strip it.
 
 .EXAMPLE
-    pwsh -ExecutionPolicy Bypass -File .vscode/init-copilot.ps1 `
-        -ProjectName "GMF - Splunk CIM Normalization" `
-        -Description "Normalize IR sourcetypes to CIM schema" `
+    powershell -ExecutionPolicy Bypass -File .vscode/init-copilot.ps1 `
+        -ProjectName "Acme Corp - API Modernization" `
+        -Description "Migrate legacy REST endpoints to a versioned API" `
         -ProblemStatement "Zero normalization exists across 1381 sourcetypes" `
         -IsIR "yes"
 #>
@@ -103,11 +103,9 @@ if ($content -match '<!-- PROJECT_CONTEXT_START -->') {
 
 # ── Write file (UTF-8 without BOM) ─────────────────────────────────────────────
 Write-Host "  Writing updated instructions file..." -ForegroundColor Cyan
-[System.IO.File]::WriteAllText(
-    $instructionsPath,
-    $content,
-    [System.Text.Encoding]::UTF8
-)
+# New-Object UTF8Encoding($false) = UTF-8 without BOM — works in PS 5.1 and PS 7
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($instructionsPath, $content, $utf8NoBom)
 
 # ── Stage and commit ───────────────────────────────────────────────────────────
 Write-Host "  Staging .github/copilot-instructions.md..." -ForegroundColor Cyan
