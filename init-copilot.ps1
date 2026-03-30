@@ -4,10 +4,13 @@
     Initializes the GitHub Copilot workspace for a newly cloned repository.
 
 .DESCRIPTION
+    - Prompts interactively for project context when parameters are not supplied
     - Injects a project context block into .github/copilot-instructions.md
-    - Optionally strips the IR section for non-security engagements
+    - Toggles IR and language sections based on engagement type
     - Stages and commits the updated instructions file
     - Safe to re-run: replaces existing context block rather than appending
+    - All parameters are optional — omit them to use interactive Read-Host prompts
+    - Supply all parameters to run non-interactively (CI/CD or CLI use)
 
 .PARAMETER ProjectName
     Human-readable project name. Used in the context block and commit message.
@@ -33,11 +36,11 @@
 #>
 
 param(
-    [Parameter(Mandatory)][string]$ProjectName,
-    [Parameter(Mandatory)][string]$Description,
-    [Parameter(Mandatory)][string]$ProblemStatement,
-    [Parameter(Mandatory)][ValidateSet('yes', 'no')][string]$IsIR,
-    [Parameter(Mandatory)][ValidateSet('python', 'powershell', 'both')][string]$Language
+    [string]$ProjectName      = "",
+    [string]$Description      = "",
+    [string]$ProblemStatement = "",
+    [string]$IsIR             = "",
+    [string]$Language         = ""
 )
 
 Set-StrictMode -Version Latest
@@ -54,7 +57,7 @@ if (-not (Test-Path $instructionsPath)) {
     exit 1
 }
 
-git -C $repoRoot rev-parse --is-inside-work-tree 2>&1 | Out-Null
+$gitCheck = git -C $repoRoot rev-parse --is-inside-work-tree 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Not inside a git repository. Run 'git init' or clone a repo first."
     exit 1
@@ -73,8 +76,57 @@ if ($skipCommit) {
     Write-Host ""
 }
 
-# ── Read template ──────────────────────────────────────────────────────────────
+# ── Interactive prompts (fires only when params not supplied) ─────────────────
 Write-Host ""
+Write-Host "  Copilot Workspace Initialization" -ForegroundColor Cyan
+Write-Host "  $(([string][char]0x2500) * 34)" -ForegroundColor DarkGray
+Write-Host ""
+
+if (-not $ProjectName) {
+    $ProjectName = (Read-Host "  Project name").Trim()
+    while (-not $ProjectName) {
+        Write-Host "  Project name is required." -ForegroundColor Red
+        $ProjectName = (Read-Host "  Project name").Trim()
+    }
+}
+
+if (-not $Description) {
+    $Description = (Read-Host "  Description (one sentence)").Trim()
+    while (-not $Description) {
+        Write-Host "  Description is required." -ForegroundColor Red
+        $Description = (Read-Host "  Description (one sentence)").Trim()
+    }
+}
+
+if (-not $ProblemStatement) {
+    $ProblemStatement = (Read-Host "  Problem statement").Trim()
+    while (-not $ProblemStatement) {
+        Write-Host "  Problem statement is required." -ForegroundColor Red
+        $ProblemStatement = (Read-Host "  Problem statement").Trim()
+    }
+}
+
+if (-not $IsIR) {
+    do {
+        $IsIR = (Read-Host "  IR/security engagement? (yes/no)").Trim().ToLower()
+        if ($IsIR -notin @('yes','no')) {
+            Write-Host "  Please enter 'yes' or 'no'." -ForegroundColor Red
+        }
+    } while ($IsIR -notin @('yes','no'))
+}
+
+if (-not $Language) {
+    do {
+        $Language = (Read-Host "  Scripting language? (python/powershell/both)").Trim().ToLower()
+        if ($Language -notin @('python','powershell','both')) {
+            Write-Host "  Please enter 'python', 'powershell', or 'both'." -ForegroundColor Red
+        }
+    } while ($Language -notin @('python','powershell','both'))
+}
+
+Write-Host ""
+
+# ── Read template ──────────────────────────────────────────────────────────────
 Write-Host "  Reading instructions template..." -ForegroundColor Cyan
 $content = Get-Content $instructionsPath -Raw
 
