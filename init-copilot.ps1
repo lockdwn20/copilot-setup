@@ -47,6 +47,10 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # ── Resolve paths ──────────────────────────────────────────────────────────────
+# $PSScriptRoot requires -File invocation mode; fall back for edge cases
+if (-not $PSScriptRoot) {
+    $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+}
 $repoRoot          = Split-Path -Parent $PSScriptRoot
 $instructionsPath  = Join-Path $repoRoot '.github' 'copilot-instructions.md'
 $instructionsPath  = [System.IO.Path]::GetFullPath($instructionsPath)
