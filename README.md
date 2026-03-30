@@ -36,10 +36,10 @@ Copilot automatically loads `copilot-instructions.md` on every session — no ma
 |-------------|-------|
 | VS Code | Any recent version |
 | GitHub Copilot extension | Must be installed and authenticated |
-| PowerShell 5.1+ (`powershell`) | Required for the init script |
+| PowerShell 7+ (`pwsh`) | Default — required for the VS Code task |
 | Git | Must be on PATH |
 
-> **Note:** If your environment uses PowerShell 7+ instead of Windows PowerShell 5.1, change `"command": "powershell"` to `"command": "pwsh"` in `.vscode/tasks.json`.
+> **Note:** If your environment uses Windows PowerShell 5.1 only (no `pwsh`), change `"command": "pwsh"` to `"command": "powershell"` in `.vscode/tasks.json`. The init script itself is compatible with both versions.
 
 ---
 
