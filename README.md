@@ -36,10 +36,10 @@ Copilot automatically loads `copilot-instructions.md` on every session — no ma
 |-------------|-------|
 | VS Code | Any recent version |
 | GitHub Copilot extension | Must be installed and authenticated |
-| PowerShell 7+ (`pwsh`) | Required for the init script |
+| PowerShell 5.1+ (`powershell`) | Required for the init script |
 | Git | Must be on PATH |
 
-> **Note:** If your environment uses Windows PowerShell 5.1 instead of PowerShell 7, change `"command": "pwsh"` to `"command": "powershell"` in `.vscode/tasks.json`.
+> **Note:** If your environment uses PowerShell 7+ instead of Windows PowerShell 5.1, change `"command": "powershell"` to `"command": "pwsh"` in `.vscode/tasks.json`.
 
 ---
 
@@ -96,6 +96,7 @@ VS Code will present four sequential input prompts:
 | One-sentence description | `Migrate legacy REST endpoints to GraphQL` |
 | Problem statement | `Existing REST API has no versioning and causes breaking changes on every release` |
 | IR/security engagement? | `yes` or `no` |
+| Scripting language(s)? | `python`, `powershell`, or `both` |
 
 ### 4. Begin work
 
@@ -168,6 +169,21 @@ The task is safe to re-run at any point. If a project context block already exis
 - Project scope changes mid-engagement
 - You are starting a new phase of the same project
 - You cloned an already-initialized repo and need to update the context
+
+---
+
+## Language Sections
+
+When you select a language at init time, Copilot receives standing instructions specific to that stack.
+
+### Python
+Covers PEP 8 compliance, type hints, Google-style docstrings, import ordering, error handling (no bare `except`), logging standards, and virtual environment / dependency management conventions.
+
+### PowerShell
+Covers PS 5.1 compatibility rules, approved verb usage, `[CmdletBinding()]` and parameter validation, error handling patterns, output channel discipline (`Write-Verbose` vs `Write-Host`), and idempotency expectations.
+
+### Both
+Both sections are retained. Use this when a project mixes Python automation scripts with PowerShell operational scripts — Copilot will apply the appropriate standard based on the file extension it is working in.
 
 ---
 
