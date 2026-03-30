@@ -56,6 +56,19 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+# ── Branch protection check ────────────────────────────────────────────────────
+$currentBranch   = git -C $repoRoot branch --show-current
+$protectedBranches = @('main', 'master', 'develop')
+$skipCommit      = $protectedBranches -contains $currentBranch
+
+if ($skipCommit) {
+    Write-Host ""
+    Write-Host "  ⚠️  Protected branch detected: '$currentBranch'" -ForegroundColor Yellow
+    Write-Host "  The instructions file will be written and staged but NOT committed." -ForegroundColor Yellow
+    Write-Host "  Direct commits to this branch will be rejected by AZDO." -ForegroundColor Yellow
+    Write-Host ""
+}
+
 # ── Read template ──────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "  Reading instructions template..." -ForegroundColor Cyan
@@ -107,23 +120,37 @@ Write-Host "  Writing updated instructions file..." -ForegroundColor Cyan
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($instructionsPath, $content, $utf8NoBom)
 
-# ── Stage and commit ───────────────────────────────────────────────────────────
+# ── Stage ─────────────────────────────────────────────────────────────────────
 Write-Host "  Staging .github/copilot-instructions.md..." -ForegroundColor Cyan
 git -C $repoRoot add '.github/copilot-instructions.md'
 
-$commitMsg = "chore: initialize copilot workspace for $ProjectName"
-Write-Host "  Committing: $commitMsg" -ForegroundColor Cyan
-git -C $repoRoot commit -m $commitMsg
+# ── Commit (skipped on protected branches — AZDO requires PR approval) ─────────
+if (-not $skipCommit) {
+    $commitMsg = "chore: initialize copilot workspace for $ProjectName"
+    Write-Host "  Committing: $commitMsg" -ForegroundColor Cyan
+    git -C $repoRoot commit -m $commitMsg
+}
 
 # ── Success summary ────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "  ✅  Copilot workspace initialized" -ForegroundColor Green
 Write-Host ""
 Write-Host "  Project   : $ProjectName" -ForegroundColor White
-Write-Host "  Branch    : $(git -C $repoRoot branch --show-current)" -ForegroundColor White
-Write-Host "  IR     : $IsIR" -ForegroundColor White
-Write-Host "  Commit    : $(git -C $repoRoot log --oneline -1)" -ForegroundColor White
+Write-Host "  Branch    : $currentBranch" -ForegroundColor White
+Write-Host "  IR        : $IsIR" -ForegroundColor White
 Write-Host "  File      : $instructionsPath" -ForegroundColor White
-Write-Host ""
-Write-Host "  Copilot will now load project context and standing instructions automatically." -ForegroundColor DarkGray
+
+if ($skipCommit) {
+    Write-Host ""
+    Write-Host "  ⚠️  File staged but not committed (protected branch)" -ForegroundColor Yellow
+    Write-Host "  Next steps:" -ForegroundColor Yellow
+    Write-Host "    1. Create your working branch:" -ForegroundColor White
+    Write-Host "       git checkout -b feature/<your-description>" -ForegroundColor Cyan
+    Write-Host "    2. Commit the staged file:" -ForegroundColor White
+    Write-Host "       git commit -m `"chore: initialize copilot workspace for $ProjectName`"" -ForegroundColor Cyan
+} else {
+    Write-Host "  Commit    : $(git -C $repoRoot log --oneline -1)" -ForegroundColor White
+    Write-Host ""
+    Write-Host "  Copilot will now load project context and standing instructions automatically." -ForegroundColor DarkGray
+}
 Write-Host ""
