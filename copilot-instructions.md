@@ -45,9 +45,9 @@ Then **stop and wait** for explicit approval before proceeding.
 
 | Branch Type | Pattern | Example |
 |-------------|---------|---------|
-| Feature | `feature/<short-description>` | `feature/cim-auth-normalization` |
+| Feature | `feature/<short-description>` | `feature/add-oauth-support` |
 | Bug Fix | `bugfix/<short-description>` | `bugfix/eventtype-tag-mismatch` |
-| Hotfix | `hotfix/<short-description>` | `hotfix/splunk-query-syntax-error` |
+| Hotfix | `hotfix/<short-description>` | `hotfix/api-response-timeout` |
 | Release | `release/<semver>` | `release/1.2.0` |
 | Chore | `chore/<short-description>` | `chore/update-gitignore` |
 
@@ -103,9 +103,9 @@ All commit messages must follow the [Conventional Commits](https://www.conventio
 
 ### Examples
 ```
-feat(normalization): add CIM eventtype mapping for windows security logs
+feat(auth): add OAuth2 token validation middleware
 fix(pipeline): resolve null reference in caseTemplate routing script
-chore(deps): update Splunk SDK to v1.7.2
+chore(deps): update requests library to v2.31.0
 docs(runbook): add phase 0 discovery procedures
 ```
 
