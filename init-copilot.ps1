@@ -21,6 +21,9 @@
 .PARAMETER IsIR
     'yes' to retain the IR/security section. 'no' to strip it.
 
+.PARAMETER Language
+    'python' to retain Python standards only, 'powershell' for PowerShell only, 'both' for all language sections.
+
 .EXAMPLE
     powershell -ExecutionPolicy Bypass -File .vscode/init-copilot.ps1 `
         -ProjectName "Acme Corp - API Modernization" `
@@ -33,7 +36,8 @@ param(
     [Parameter(Mandatory)][string]$ProjectName,
     [Parameter(Mandatory)][string]$Description,
     [Parameter(Mandatory)][string]$ProblemStatement,
-    [Parameter(Mandatory)][ValidateSet('yes', 'no')][string]$IsIR
+    [Parameter(Mandatory)][ValidateSet('yes', 'no')][string]$IsIR,
+    [Parameter(Mandatory)][ValidateSet('python', 'powershell', 'both')][string]$Language
 )
 
 Set-StrictMode -Version Latest
@@ -77,10 +81,24 @@ $content = Get-Content $instructionsPath -Raw
 # ── Strip IR block if non-security engagement ───────────────────────────────
 if ($IsIR -eq 'no') {
     Write-Host "  IR section: DISABLED (non-security engagement)" -ForegroundColor Yellow
-    # Removes the block including its surrounding blank lines
     $content = $content -replace '(?s)\r?\n?<!-- IR_START -->.*?<!-- IR_END -->\r?\n?', "`n"
 } else {
     Write-Host "  IR section: ENABLED (security engagement)" -ForegroundColor Green
+}
+
+# ── Toggle language sections ───────────────────────────────────────────────────
+switch ($Language) {
+    'python' {
+        Write-Host "  Language  : PYTHON only" -ForegroundColor Green
+        $content = $content -replace '(?s)\r?\n?<!-- POWERSHELL_START -->.*?<!-- POWERSHELL_END -->\r?\n?', "`n"
+    }
+    'powershell' {
+        Write-Host "  Language  : POWERSHELL only" -ForegroundColor Green
+        $content = $content -replace '(?s)\r?\n?<!-- PYTHON_START -->.*?<!-- PYTHON_END -->\r?\n?', "`n"
+    }
+    'both' {
+        Write-Host "  Language  : PYTHON + POWERSHELL" -ForegroundColor Green
+    }
 }
 
 # ── Build project context block ────────────────────────────────────────────────
@@ -138,6 +156,7 @@ Write-Host ""
 Write-Host "  Project   : $ProjectName" -ForegroundColor White
 Write-Host "  Branch    : $currentBranch" -ForegroundColor White
 Write-Host "  IR        : $IsIR" -ForegroundColor White
+Write-Host "  Language  : $Language" -ForegroundColor White
 Write-Host "  File      : $instructionsPath" -ForegroundColor White
 
 if ($skipCommit) {
