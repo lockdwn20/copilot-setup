@@ -43,18 +43,27 @@
             "label": "Initialize Copilot Workspace",
             "detail": "Writes project context to copilot-instructions.md, toggles IR and language sections, and commits",
             "type": "shell",
-            "command": "powershell",
+            "command": "pwsh",
             "args": [
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
                 "${workspaceFolder}/.vscode/init-copilot.ps1",
                 "-ProjectName",
-                "${input:projectName}",
+                {
+                    "value": "${input:projectName}",
+                    "quoting": "strong"
+                },
                 "-Description",
-                "${input:projectDescription}",
+                {
+                    "value": "${input:projectDescription}",
+                    "quoting": "strong"
+                },
                 "-ProblemStatement",
-                "${input:problemStatement}",
+                {
+                    "value": "${input:problemStatement}",
+                    "quoting": "strong"
+                },
                 "-IsIR",
                 "${input:isIR}",
                 "-Language",
