@@ -47,13 +47,16 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # ── Resolve paths ──────────────────────────────────────────────────────────────
-# $PSScriptRoot requires -File invocation mode; fall back for edge cases
-if (-not $PSScriptRoot) {
-    $PSScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+# Use git to locate the repo root — reliable regardless of PS invocation mode.
+# git rev-parse returns forward slashes on Windows; normalize to OS separator.
+$repoRoot = (& git rev-parse --show-toplevel 2>$null).Trim().Replace('/', [IO.Path]::DirectorySeparatorChar)
+if (-not $repoRoot) {
+    Write-Error "Unable to determine repository root. Ensure git is on PATH and you are inside a git repository."
+    exit 1
 }
-$repoRoot          = Split-Path -Parent $PSScriptRoot
-$instructionsPath  = Join-Path $repoRoot '.github' 'copilot-instructions.md'
-$instructionsPath  = [System.IO.Path]::GetFullPath($instructionsPath)
+
+# Join-Path only accepts two arguments in PS 5.1 — nest calls for compatibility
+$instructionsPath = Join-Path (Join-Path $repoRoot '.github') 'copilot-instructions.md'
 
 # ── Pre-flight checks ──────────────────────────────────────────────────────────
 if (-not (Test-Path $instructionsPath)) {
@@ -61,7 +64,7 @@ if (-not (Test-Path $instructionsPath)) {
     exit 1
 }
 
-git -C $repoRoot rev-parse --is-inside-work-tree 2>&1 | Out-Null
+$gitCheck = git -C $repoRoot rev-parse --is-inside-work-tree 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Not inside a git repository. Run 'git init' or clone a repo first."
     exit 1
