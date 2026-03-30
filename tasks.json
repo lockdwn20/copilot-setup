@@ -4,7 +4,7 @@
         {
             "label": "Initialize Copilot Workspace",
             "detail": "Prompts for project context in the terminal, writes copilot-instructions.md and commits",
-            "type": "shell",
+            "type": "process",
             "command": "powershell.exe",
             "args": [
                 "-NoProfile",
