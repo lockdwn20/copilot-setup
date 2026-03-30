@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "projectName",
+            "type": "promptString",
+            "description": "Project name  (e.g. Splunk Alert Engineering)"
+        },
+        {
+            "id": "projectDescription",
+            "type": "promptString",
+            "description": "One-sentence description of what this project delivers"
+        },
+        {
+            "id": "problemStatement",
+            "type": "promptString",
+            "description": "Problem being solved — current state and desired outcome"
+        },
+        {
+            "id": "isIR",
+            "type": "pickString",
+            "description": "Is this an IR or security engineering engagement?",
+            "options": [
+                "yes",
+                "no"
+            ],
+            "default": "no"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Initialize Copilot Workspace",
+            "detail": "Writes project context to copilot-instructions.md, toggles IR section, and commits",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/init-copilot.ps1",
+                "-ProjectName",
+                "${input:projectName}",
+                "-Description",
+                "${input:projectDescription}",
+                "-ProblemStatement",
+                "${input:problemStatement}",
+                "-IsIR",
+                "${input:isIR}"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "default"
+            }
+        }
+    ]
+}
