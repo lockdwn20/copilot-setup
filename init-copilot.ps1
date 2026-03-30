@@ -54,7 +54,7 @@ if (-not (Test-Path $instructionsPath)) {
     exit 1
 }
 
-$gitCheck = git -C $repoRoot rev-parse --is-inside-work-tree 2>&1
+git -C $repoRoot rev-parse --is-inside-work-tree 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Not inside a git repository. Run 'git init' or clone a repo first."
     exit 1
