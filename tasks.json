@@ -4,7 +4,7 @@
         {
             "id": "projectName",
             "type": "promptString",
-            "description": "Project name  (e.g. Splunk Alert Engineering)"
+            "description": "Project name  (e.g. Acme Corp - API Modernization Phase 1)"
         },
         {
             "id": "projectDescription",
@@ -14,7 +14,7 @@
         {
             "id": "problemStatement",
             "type": "promptString",
-            "description": "Problem being solved — current state and desired outcome"
+            "description": "Problem being solved \u2014 current state and desired outcome"
         },
         {
             "id": "isIR",
@@ -25,14 +25,25 @@
                 "no"
             ],
             "default": "no"
+        },
+        {
+            "id": "language",
+            "type": "pickString",
+            "description": "Primary scripting language(s) for this project",
+            "options": [
+                "python",
+                "powershell",
+                "both"
+            ],
+            "default": "python"
         }
     ],
     "tasks": [
         {
             "label": "Initialize Copilot Workspace",
-            "detail": "Writes project context to copilot-instructions.md, toggles IR section, and commits",
+            "detail": "Writes project context to copilot-instructions.md, toggles IR and language sections, and commits",
             "type": "shell",
-            "command": "pwsh",
+            "command": "powershell",
             "args": [
                 "-ExecutionPolicy",
                 "Bypass",
@@ -45,7 +56,9 @@
                 "-ProblemStatement",
                 "${input:problemStatement}",
                 "-IsIR",
-                "${input:isIR}"
+                "${input:isIR}",
+                "-Language",
+                "${input:language}"
             ],
             "presentation": {
                 "echo": true,
