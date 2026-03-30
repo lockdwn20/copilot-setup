@@ -111,8 +111,100 @@ docs(runbook): add phase 0 discovery procedures
 
 ---
 
+<!-- PYTHON_START -->
+## § 4 — Python Coding Standards
+
+> This section is active when the project language is set to **python** or **both**.
+
+### Style and Formatting
+- All code must comply with [PEP 8](https://peps.python.org/pep-0008/)
+- Maximum line length: **99 characters**
+- Use **f-strings** for string interpolation — never `%` formatting or `.format()`
+- Use **double quotes** for strings unless the string itself contains double quotes
+
+### Type Hints
+- All function signatures must include type hints (PEP 484)
+- Use `Optional[X]` for values that may be `None`
+- Return types must always be declared, including `-> None`
+
+### Docstrings
+- All modules, classes, and public functions must have a docstring
+- Use **Google-style** docstrings
+
+### Imports
+Order imports in three groups separated by blank lines:
+1. Standard library
+2. Third-party packages
+3. Local modules
+
+### Error Handling
+- **Never** use bare `except:` clauses — always specify the exception type
+- Use `except Exception as e` only as a last resort and always log the error
+- Prefer specific exception types and handle them individually
+
+### Logging
+- Use the `logging` module — **never** use `print()` for diagnostic output in scripts
+- Always get a named logger: `logger = logging.getLogger(__name__)`
+- Use appropriate levels: `DEBUG` for trace, `INFO` for milestones, `WARNING` for recoverable issues, `ERROR` for failures
+
+### Virtual Environments and Dependencies
+- Every project must use `venv` for environment isolation
+- Dependencies must be pinned in `requirements.txt` with exact versions
+- Dev-only dependencies go in `requirements-dev.txt`
+- Never commit `.venv/`, `__pycache__/`, or `*.pyc` — ensure `.gitignore` covers these
+
+### General Rules
+- Functions must do one thing — if a function needs more than a paragraph to describe, split it
+- No magic numbers — assign constants at the module level with descriptive names
+- Copilot must suggest a `requirements.txt` entry for every third-party import it introduces
+
+<!-- PYTHON_END -->
+
+<!-- POWERSHELL_START -->
+## § 5 — PowerShell Coding Standards
+
+> This section is active when the project language is set to **powershell** or **both**.
+> All scripts must be compatible with **Windows PowerShell 5.1**.
+
+### Script Structure
+Every script must open with a `#Requires -Version 5.1` declaration and comment-based help block covering `.SYNOPSIS`, `.DESCRIPTION`, `.PARAMETER`, and `.EXAMPLE`.
+
+### Functions and Naming
+- Use **approved PowerShell verbs** — run `Get-Verb` to verify before using a new verb
+- Function names follow `Verb-Noun` PascalCase: `Get-EventRecord`, `Invoke-ApiRequest`
+- Variable names use camelCase: `$inputPath`, `$recordCount`
+- **Never use aliases** in scripts (`%`, `?`, `gci`, etc.) — always use full cmdlet names
+
+### Parameters
+All non-trivial scripts must use `[CmdletBinding()]` and declared parameters with validation attributes (`[Parameter(Mandatory)]`, `[ValidateSet(...)]`, `[ValidateNotNullOrEmpty()]`).
+
+### Error Handling
+- Set `$ErrorActionPreference = 'Stop'` at the top of every script
+- Wrap external calls and file operations in `try/catch` blocks
+- Always include a specific error message — never silently swallow errors
+
+### Output
+- Use `Write-Verbose` for diagnostic trace output (visible with `-Verbose` flag)
+- Use `Write-Warning` for recoverable issues
+- Use `Write-Error` for failures — never use `Write-Host` for errors
+- Reserve `Write-Host` for intentional user-facing console output only
+- Functions should output objects via the pipeline, not formatted strings
+
+### Compatibility Rules (PS 5.1)
+- Do not use `??` null coalescing — use `if ($null -eq $x)` instead
+- Do not use `&&` or `||` pipeline chain operators — use `if ($LASTEXITCODE -ne 0)`
+- Write files with explicit no-BOM UTF-8: `New-Object System.Text.UTF8Encoding($false)`
+- Do not use `ForEach-Object -Parallel` — not available in PS 5.1
+
+### General Rules
+- Scripts must be idempotent where possible — re-running should not cause unintended side effects
+- Always validate input paths with `Test-Path` before use
+- Copilot must flag any cmdlet or syntax introduced after PS 5.1
+
+<!-- POWERSHELL_END -->
+
 <!-- IR_START -->
-## § 4 — IR / Security Engagement Context
+## § 6 — IR / Security Engagement Context
 
 > This section is active for security operations and detection engineering engagements.
 > It is removed by the init task for non-IR projects.
@@ -154,7 +246,7 @@ Alert logic changes must include an inline comment explaining the rationale for 
 
 ---
 
-## § 5 — Problem Framing Protocol
+## § 7 — Problem Framing Protocol
 
 When a new task or feature request is received, Copilot will structure its response as follows before any planning or execution:
 
