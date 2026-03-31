@@ -25,6 +25,28 @@
             "runOptions": {
                 "runOn": "default"
             }
+        },
+        {
+            "label": "Scaffold Project Structure",
+            "detail": "Builds standard directory structure based on language detected from copilot-instructions.md",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/.vscode/scaffold-structure.ps1"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "new",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": []
         }
     ]
 }
