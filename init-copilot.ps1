@@ -64,7 +64,7 @@ if (-not (Test-Path $instructionsPath)) {
     exit 1
 }
 
-git -C $repoRoot rev-parse --is-inside-work-tree 2>&1 | Out-Null
+$gitCheck = git -C $repoRoot rev-parse --is-inside-work-tree 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Not inside a git repository. Run 'git init' or clone a repo first."
     exit 1
@@ -206,6 +206,15 @@ if (-not $skipCommit) {
     $commitMsg = "chore: initialize copilot workspace for $ProjectName"
     Write-Host "  Committing: $commitMsg" -ForegroundColor Cyan
     git -C $repoRoot commit -m $commitMsg
+}
+
+# ── Scaffold directory structure ──────────────────────────────────────────────
+Write-Host "  Scaffolding project directory structure..." -ForegroundColor Cyan
+$scaffoldScript = Join-Path (Join-Path $repoRoot '.vscode') 'scaffold-structure.ps1'
+if (Test-Path $scaffoldScript) {
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $scaffoldScript -Language $Language -ProjectName $ProjectName
+} else {
+    Write-Host "  scaffold-structure.ps1 not found — skipping structure scaffold." -ForegroundColor Yellow
 }
 
 # ── Success summary ────────────────────────────────────────────────────────────
