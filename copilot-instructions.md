@@ -22,6 +22,7 @@ Before generating any code, configuration, file changes, or shell commands, Copi
 3. **Describe** the approach at a logical level — not pseudocode, but intent
 4. **Flag** any assumptions being made that have not been explicitly stated
 5. **Ask** one clarifying question if the request is ambiguous — never guess
+6. **Versioning** — for every file being modified: state the current version, the new version, and the changelog entry that will be written. For new files, state v1.0 and the initial changelog entry.
 
 Then **stop and wait** for explicit approval before proceeding.
 
@@ -36,6 +37,7 @@ Then **stop and wait** for explicit approval before proceeding.
 - Begin implementation while still asking questions
 - Skip the plan because the task "seems simple"
 - Generate multiple files in one response without listing them first
+- Modify a file without updating its version header and CHANGELOG.md
 
 ---
 
@@ -104,15 +106,168 @@ All commit messages must follow the [Conventional Commits](https://www.conventio
 ### Examples
 ```
 feat(auth): add OAuth2 token validation middleware
-fix(pipeline): resolve null reference in caseTemplate routing script
+fix(pipeline): resolve null reference in event routing script
 chore(deps): update requests library to v2.31.0
 docs(runbook): add phase 0 discovery procedures
 ```
 
 ---
 
+
+## § 4 — File Versioning Standard
+
+Every file created or modified in this project must carry a versioned header. This is a **hard requirement** — Copilot must never modify a file without updating its version and must never create a file without a v1.0 header.
+
+### Version Rules
+
+| Change Type | Version Bump | Example |
+|-------------|-------------|---------|
+| Initial creation | `v1.0` | New module or script |
+| Bug fix / minor enhancement | Increment minor | `v1.1`, `v1.2` |
+| New feature added to existing file | Increment minor | `v1.3` |
+| Breaking change (signature, behaviour, output) | Bump major | `v2.0` |
+
+Date format: `YYYYMMDD` — always use today's date when modifying.
+
+---
+
+### Python File Header
+
+Every `.py` file must open with a module-level docstring in this exact format:
+
+```python
+"""
+<Module Name>
+<Module Name> v1.0
+YYYYMMDD
+
+<One paragraph describing what this module does.>
+
+Functions:
+  function_name()     # Brief description
+  other_function()    # Brief description
+
+Version History:
+- v1.0: Initial implementation
+"""
+```
+
+**Rules:**
+- The header docstring must be the **first statement** in the file — before imports
+- `Functions:` lists every public function with a one-line description
+- When modifying: increment version, update date, add one entry to `Version History`
+- Version history entries must describe the **what and why**, not just "updated"
+
+**Example — after a bug fix:**
+```python
+"""
+Event Processor
+Event Processor v1.2
+20260402
+
+Processes incoming events and routes them to the appropriate handler.
+
+Functions:
+  process_event()     # Parse and route a single event dict
+  batch_process()     # Process a list of events with error isolation
+
+Version History:
+- v1.0: Initial implementation
+- v1.1: Add batch_process() for bulk ingestion support
+- v1.2: Fix KeyError in process_event() when event type field is absent
+"""
+```
+
+---
+
+### PowerShell File Header
+
+Every `.ps1` file must use comment-based help extended with a version block:
+
+```powershell
+<#
+.SYNOPSIS
+    One-line description of what this script or function does.
+
+.DESCRIPTION
+    Full description. Include important behaviours, side effects,
+    and any dependencies.
+
+.VERSION
+    v1.0
+
+.DATE
+    YYYYMMDD
+
+.PARAMETER ParameterName
+    Description of the parameter.
+
+.EXAMPLE
+    Verb-Noun -Parameter Value
+
+.NOTES
+    Version History:
+    - v1.0: Initial implementation
+#>
+```
+
+**Rules:**
+- `.VERSION` and `.DATE` are custom fields — PowerShell ignores unknown help keys, so they are safe to include
+- `.NOTES` carries the full version history
+- When modifying: increment `.VERSION`, update `.DATE`, add one line to `Version History` in `.NOTES`
+- For function files in `Public/` or `Private/`, the help block goes inside the function, not at the top of the file
+
+**Example — after adding a parameter:**
+```powershell
+<#
+.SYNOPSIS
+    Retrieves configuration values from the project config directory.
+
+.VERSION
+    v1.2
+
+.DATE
+    20260402
+
+.NOTES
+    Version History:
+    - v1.0: Initial implementation
+    - v1.1: Add -Strict flag to throw on missing keys instead of returning null
+    - v1.2: Support array values in JSON config via -AsArray switch
+#>
+```
+
+---
+
+### CHANGELOG.md
+
+Every project must maintain a `CHANGELOG.md` in the repo root following [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format with [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+**Copilot must update CHANGELOG.md as part of every approved change.** The entry goes under `## [Unreleased]` using the appropriate subsection:
+
+| Subsection | When to use |
+|------------|-------------|
+| `### Added` | New files, functions, features, parameters |
+| `### Changed` | Modified behaviour, renamed items, refactored logic |
+| `### Fixed` | Bug fixes |
+| `### Removed` | Deleted files, functions, or parameters |
+| `### Deprecated` | Items that will be removed in a future version |
+| `### Security` | Vulnerability fixes |
+
+**Format:**
+```markdown
+## [Unreleased]
+
+### Added
+- `module_name.process_event()` — initial implementation of event routing logic
+
+### Fixed
+- `module_name.process_event()` — resolve KeyError when event type field is absent
+```
+
+
 <!-- PYTHON_START -->
-## § 4 — Python Coding Standards
+## § 5 — Python Coding Standards
 
 > This section is active when the project language is set to **python** or **both**.
 
@@ -161,7 +316,7 @@ Order imports in three groups separated by blank lines:
 <!-- PYTHON_END -->
 
 <!-- POWERSHELL_START -->
-## § 5 — PowerShell Coding Standards
+## § 6 — PowerShell Coding Standards
 
 > This section is active when the project language is set to **powershell** or **both**.
 > All scripts must be compatible with **Windows PowerShell 5.1**.
@@ -204,7 +359,7 @@ All non-trivial scripts must use `[CmdletBinding()]` and declared parameters wit
 <!-- POWERSHELL_END -->
 
 <!-- IR_START -->
-## § 6 — IR / Security Engagement Context
+## § 7 — IR / Security Engagement Context
 
 > This section is active for security operations and detection engineering engagements.
 > It is removed by the init task for non-IR projects.
@@ -231,11 +386,11 @@ Every new detection must include:
 
 Alert logic changes must include an inline comment explaining the rationale for the change.
 
-### TheHive / SOAR Context
-- Case templates follow the **consolidated 25-template schema** — do not introduce new templates without discussion
-- JavaScript routing scripts must explicitly define `caseTemplate` before use — never assume it exists in scope
+### SOAR / Case Management Context
+- Case templates follow a **project-defined schema** — do not introduce new templates or schema changes without discussion
+- Routing scripts must explicitly define all schema items before use — never assume a field or variable exists in scope
 - All API integrations must handle `null`, `undefined`, and HTTP error responses gracefully
-- Prefix concatenation for case template names must be validated — confirm format before committing
+- Any string concatenation used to build identifiers (template names, keys, prefixes) must be validated for correct format before committing
 
 ### Sensitive Data Rules
 - **Never** log, print, commit, or suggest code that exposes credentials, API keys, tokens, or PII
@@ -246,7 +401,7 @@ Alert logic changes must include an inline comment explaining the rationale for 
 
 ---
 
-## § 7 — Problem Framing Protocol
+## § 8 — Problem Framing Protocol
 
 When a new task or feature request is received, Copilot will structure its response as follows before any planning or execution:
 
@@ -262,6 +417,10 @@ When a new task or feature request is received, Copilot will structure its respo
 
 ## Files Affected
 [List of files to be created, modified, or deleted]
+
+## Version Impact
+[For each modified file: current version → new version and the changelog entry to be written]
+[For new files: v1.0 — initial implementation]
 
 ## Assumptions
 [Anything being assumed that the user has not explicitly stated]
