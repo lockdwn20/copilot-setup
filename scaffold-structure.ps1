@@ -92,6 +92,27 @@ $moduleName = ($ProjectName -replace '[^a-zA-Z0-9 ]', '') -replace '\s+(.)', { $
 $moduleName = $moduleName.Substring(0,1).ToUpper() + $moduleName.Substring(1)
 
 # ── Helper functions ───────────────────────────────────────────────────────────
+function Get-Changelog {
+    param([string]$Name)
+    $today = Get-Date -Format 'yyyy-MM-dd'
+    $lines = @(
+        "# Changelog",
+        "",
+        "All notable changes to $Name will be documented in this file.",
+        "",
+        "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),",
+        "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).",
+        "",
+        "## [Unreleased]",
+        "",
+        "## [0.1.0] - $today",
+        "",
+        "### Added",
+        "- Initial project scaffold"
+    )
+    return ($lines -join "`n") + "`n"
+}
+
 function New-Directory {
     param([string]$Path)
     if (-not (Test-Path $Path)) {
@@ -187,7 +208,16 @@ logs/*.log
 # VS Code
 .vscode/settings.json
 "@
+
+    # Example stub -- demonstrates the required versioned header standard
+    $today = Get-Date -Format 'yyyyMMdd'
+    $pyHeader = "# Example Module`n# Example Module v1.0`n# $today`n#`n# Starter module demonstrating the required file versioning header standard.`n# Replace this description with a summary of what the module does.`n#`n# Functions:`n#   example_function()     -- Placeholder, replace with real functions`n#`n# Version History:`n# - v1.0: Initial scaffold`n"
+    $pyBody   = "`nimport logging`n`nlogger = logging.getLogger(__name__)`n`n`ndef example_function() -> None:`n    `"Placeholder function -- replace with real implementation.`"`n    logger.info('example_function called')`n"
+    New-StubFile (Join-Path $srcDir 'example_module.py') ($pyHeader + $pyBody)
+
+    New-StubFile (Join-Path $repoRoot 'CHANGELOG.md') (Get-Changelog $ProjectName)
 }
+
 
 # ── PowerShell structure ───────────────────────────────────────────────────────
 function Build-PowerShellStructure {
@@ -274,7 +304,15 @@ TestResults/
 # VS Code
 .vscode/settings.json
 "@
+
+    # Example stub -- demonstrates the required versioned header standard
+    $today = Get-Date -Format 'yyyyMMdd'
+    $psStub = "function Get-ExampleItem {`n<#`n.SYNOPSIS`n    Placeholder function demonstrating the required versioned header standard.`n`n.DESCRIPTION`n    Replace this description with a summary of what the function does.`n    This file lives in Public/ because it is part of the exported module API.`n`n.VERSION`n    v1.0`n`n.DATE`n    $today`n`n.PARAMETER Name`n    The name of the item to retrieve.`n`n.EXAMPLE`n    Get-ExampleItem -Name 'sample'`n`n.NOTES`n    Version History:`n    - v1.0: Initial scaffold`n#>`n    [CmdletBinding()]`n    param(`n        [Parameter(Mandatory)][string]`$Name`n    )`n    Write-Verbose `"Get-ExampleItem called with Name='`$Name'`"`n    # TODO: Replace with real implementation`n}`n"
+    New-StubFile (Join-Path $publicDir 'Get-ExampleItem.ps1') $psStub
+
+    New-StubFile (Join-Path $repoRoot 'CHANGELOG.md') (Get-Changelog $ProjectName)
 }
+
 
 # ── Execute based on language ──────────────────────────────────────────────────
 Write-Host ""
